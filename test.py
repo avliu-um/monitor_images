@@ -1,4 +1,4 @@
-from scraper_util_avliu.util import get_selenium_driver
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,7 +7,10 @@ from selenium.webdriver.support import expected_conditions as EC
 url = "https://images.google.com"
 upload_file = '/Users/avliu/Dropbox (University of Michigan)/projects/monitor_images/test_photo.jpg'
 
-driver = get_selenium_driver()
+options = webdriver.FirefoxOptions()
+options.add_argument("-headless")
+driver = webdriver.Firefox(options=options)
+
 driver.get(url)
 
 # Get the RIS button
