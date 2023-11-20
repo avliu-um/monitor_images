@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 url = "https://images.google.com"
-upload_file = '/Users/avliu/Dropbox (University of Michigan)/projects/monitor_images/test_photo.jpg'
+upload_file = './test_photo.jpg'
 
 options = webdriver.FirefoxOptions()
 options.add_argument("-headless")

@@ -1,14 +1,18 @@
-from scraper_util_avliu.util import get_selenium_driver
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+def get_driver():
+    options = webdriver.FirefoxOptions()
+    options.add_argument("-headless")
+    driver = webdriver.Firefox(options=options)
+    return driver
 
-# TODO: change to firefox
 def get_google(photo_filename):
     url = "https://images.google.com"
 
-    driver = get_selenium_driver()
+    driver = get_driver()
     driver.get(url)
 
     # Get the RIS button
@@ -47,7 +51,7 @@ def get_google(photo_filename):
 
 
 def get_yandex(photo_filename):
-    driver = get_selenium_driver()
+    driver = get_driver()
 
     driver.get('https://yandex.com/images/')
     file_elem = driver.find_element(By.CSS_SELECTOR, "input[type = 'file']")
@@ -71,8 +75,8 @@ def get_yandex(photo_filename):
 
 
 def main():
-    good_image = '/Users/avliu/Dropbox (University of Michigan)/projects/monitor_images/test_photo.jpg'
-    bad_image = '/Users/avliu/Dropbox (University of Michigan)/projects/monitor_images/my_photo.png'
+    good_image = './test_photo.jpg'
+    bad_image = './my_photo.png'
     get_yandex(good_image)
 
 
