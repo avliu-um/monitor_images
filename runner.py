@@ -2,7 +2,7 @@ import csv
 import os
 import boto3
 from datetime import datetime
-from monitor_images import get_google, get_yandex  # Importing the needed function from your module.
+from monitor_images import get_driver, get_google, get_yandex  # Importing the needed function from your module.
 
 
 def run():
@@ -19,7 +19,8 @@ def run():
 
             for platform, rmi_function in [('google',get_google), ('yandex',get_yandex)]:
                 # Process the file
-                links = rmi_function("photo.jpg")
+                driver = get_driver()
+                links = rmi_function(driver, "photo.jpg")
 
                 # Prepare S3 path with current date
                 today = datetime.today()

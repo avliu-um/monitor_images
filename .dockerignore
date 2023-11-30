@@ -3,3 +3,4 @@ env/
 .github/
 .gitignore
 .ipynb_checkpoints/
+*.html

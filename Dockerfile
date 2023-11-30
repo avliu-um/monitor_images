@@ -8,4 +8,7 @@ COPY . .
 RUN sudo apt-get update
 RUN sudo apt-get -y install pip
 RUN pip install -r requirements.txt
+
+# debugging
+RUN sudo apt -y install vim
 CMD ["python3", "-u", "./test.py"]
