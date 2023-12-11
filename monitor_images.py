@@ -1,5 +1,6 @@
 import os
 import traceback
+import time
 
 from selenium import webdriver
 from selenium.common import TimeoutException
@@ -33,6 +34,8 @@ def get_google(driver, photo_filename):
     )
     file_input.send_keys(photo_filename)
     print(f'uploaded image')
+
+    time.sleep(30)
 
     # Click on "Find image source" --> Gives exact matches
     exact_matches_selector = 'div[class="ICt2Q"]'

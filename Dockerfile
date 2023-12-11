@@ -11,4 +11,4 @@ RUN pip install -r requirements.txt
 
 # debugging
 RUN sudo apt -y install vim
-CMD ["python3", "-u", "./test.py"]
+CMD ["python3", "-u", "./runner.py"]
