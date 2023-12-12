@@ -73,22 +73,20 @@ def lambda_handler(event, context):
         start_time = datetime.now()
         print(f'start time: {start_time}')
 
-        # TODO
-        #bucket = event['bucket']
-        #recipients = event['recipients']
-
-        yesterday = datetime.today() - timedelta(days=1)
-        yesterday_str = yesterday.strftime('%Y-%m-%d')
-
-        bucket_name = 'test-monitor-images'
-        prefix = f'raw/{yesterday_str}'
+        bucket_name = event['bucket']
+        if 'prefix' in event.keys():
+            prefix = event['prefix']
+            subject = f'monitor images output for prefix {prefix}'
+        else:
+            yesterday = datetime.today() - timedelta(days=1)
+            yesterday_str = yesterday.strftime('%Y-%m-%d')
+            prefix = f'raw/{yesterday_str}'
+            subject = f'monitor images output for {yesterday_str}'
         output_filepath = save_s3(bucket_name, prefix)
-        subject = f'monitor images output {yesterday_str}'
-        body = f'this is the resulting dataset for the data scraped on {yesterday_str}'
 
         sender = "quest2achiever2000@gmail.com"
-        recipients = ['quest2achiever2000@gmail.com', 'avliu@umich.edu']
-
+        recipients = event['recipients']
+        body = f'this email was automatically generated'
         send_email(subject, body, sender, recipients, output_filepath)
 
         end_time = datetime.now()
@@ -108,5 +106,9 @@ def lambda_handler(event, context):
 
 
 if __name__ == '__main__':
-    response = lambda_handler(None, None)
+    event = {
+        'bucket': 'test-monitor-images',
+        'recipients': ['quest2achiever2000@gmail.com', 'avliu@umich.edu']
+    }
+    response = lambda_handler(event, None)
     print(response)

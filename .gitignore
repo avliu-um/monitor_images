@@ -4,3 +4,4 @@ env/
 *.html
 images/
 other/
+__pycache__/
