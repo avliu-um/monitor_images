@@ -70,6 +70,7 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
 def main():
     platforms = ['google', 'yandex']
     input_s3_bucket = os.getenv('input_s3_bucket')
+    input_s3_prefix = os.getenv('input_s3_prefix')
     input_s3_files = os.getenv('input_s3_files')
     output_s3_bucket = os.getenv('output_s3_bucket')
 
@@ -77,7 +78,7 @@ def main():
         input_s3_files = []
         s3_client = boto3.client('s3')
         paginator = s3_client.get_paginator('list_objects')
-        for result in paginator.paginate(Bucket=input_s3_bucket, Prefix='images'):
+        for result in paginator.paginate(Bucket=input_s3_bucket, Prefix=input_s3_prefix):
             for file in result['Contents']:
                 s3_image_filename = file['Key']
                 input_s3_files.append(s3_image_filename)

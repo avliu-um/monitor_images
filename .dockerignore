@@ -1,7 +1,7 @@
-env/
-.idea/
-.github/
-.gitignore
-.ipynb_checkpoints/
-*.html
-messenger/
+# Ignore everything
+*
+
+# Allow files and directories
+!/requirements.txt
+!/monitor_images.py
+!/runner.py
