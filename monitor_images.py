@@ -70,7 +70,7 @@ def get_google(driver, photo_filename):
 
 def get_yandex(driver, photo_filename):
     driver.get('https://yandex.com/images/')
-    photo_upload_selector = "input[type = 'fileASDF']"
+    photo_upload_selector = "input[type = 'file']"
     file_input = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, photo_upload_selector))
     )
