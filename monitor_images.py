@@ -1,4 +1,5 @@
 import os
+import time
 import traceback
 
 from selenium import webdriver
@@ -77,6 +78,8 @@ def get_yandex(driver, photo_filename):
     file_input.send_keys(photo_filename)
     print(f'uploaded image')
 
+    time.sleep(30)
+
     # Answers the Q: Are the links we grab below exact matches or no?
     exact_match = True
     try:
@@ -113,10 +116,7 @@ def main():
 
     driver = get_driver()
     try:
-        if platform=='google':
-            links = get_google(driver, image_path)
-        else:
-            links = get_yandex(driver, image_path)
+        links = monitor_images(platform, image_path, driver)
 
         print(f'got {len(links)} total links: ')
         print(links)

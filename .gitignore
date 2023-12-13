@@ -6,3 +6,4 @@ images/
 other/
 __pycache__/
 tmp/
+docker_runner.sh
