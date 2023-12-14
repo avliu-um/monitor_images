@@ -4,4 +4,4 @@
 # Allow files and directories
 !/requirements.txt
 !/monitor_images.py
-!/runner.py
+!/runner_aws.py
