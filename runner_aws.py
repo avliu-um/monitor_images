@@ -13,12 +13,14 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
     local_image_filename = f'{os.getcwd()}/tmp/image.jpg'
     local_output_dir = 'tmp'
 
+    images_processed = 0
     for input_s3_filename in input_s3_filenames:
         if os.path.isfile(local_image_filename):
             os.remove(local_image_filename)
         s3_client.download_file(input_s3_bucket, input_s3_filename, local_image_filename)
 
         for platform in platforms:
+            print(f'new aws runner iteration')
             print(f''
                   f'platform: {platform}, '
                   f'input s3 bucket name: {input_s3_bucket}, '
@@ -34,7 +36,8 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
                 driver,
                 extra_data={
                     'search_s3_bucket': input_s3_bucket,
-                    'search_s3_image_filename': input_s3_filename
+                    'search_s3_image_filename': input_s3_filename,
+                    'scrape_date': datetime.today().strftime('%Y-%m-%d')
                 }
             )
 
@@ -51,13 +54,19 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
             print(f'output s3 filename: {output_s3_filename}')
             print()
 
+        print(f'processed {images_processed} / {len(input_s3_filenames)} images')
+
 
 def main():
     platforms = ['google', 'yandex']
-    input_s3_bucket = os.getenv('input_s3_bucket')
-    input_s3_prefix = os.getenv('input_s3_prefix')
-    input_s3_files = os.getenv('input_s3_files')
-    output_s3_bucket = os.getenv('output_s3_bucket')
+    #input_s3_bucket = os.getenv('input_s3_bucket')
+    #input_s3_prefix = os.getenv('input_s3_prefix')
+    #input_s3_files = os.getenv('input_s3_files')
+    #output_s3_bucket = os.getenv('output_s3_bucket')
+    input_s3_bucket = 'qa-monitor-images'
+    input_s3_prefix = 'all_all'
+    input_s3_files = None
+    output_s3_bucket = 'qa-monitor-images'
 
     if input_s3_files is None:
         input_s3_files = []

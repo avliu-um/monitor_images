@@ -2,6 +2,7 @@ import json
 import os
 import time
 import traceback
+from datetime import datetime
 
 from selenium import webdriver
 from selenium.common import TimeoutException, WebDriverException
@@ -18,10 +19,11 @@ def monitor_image(
         extra_data={}
 ):
     print(
-        f'Running monitor image for platform {platform}, '
-        f'local image filepath {image_filepath},'
-        f'and output directory {output_dir},'
+        f'running monitor image. platform: {platform}, '
+        f'local image filepath: {image_filepath},'
+        f'and output directory: {output_dir},'
     )
+    start_time = datetime.now()
 
     image_filename_base = image_filepath.split("/")[-1].split(".")[0]
     image_filename_base = f'{platform}_{image_filename_base}'
@@ -36,7 +38,7 @@ def monitor_image(
 
     try:
         links = monitor_fun(driver, image_filepath)
-        print(f'links: {links}')
+        print(f'collected {len(links)} links')
 
         data = []
         for link in links:
@@ -66,8 +68,11 @@ def monitor_image(
 
         success = False
 
-    print(f'Result: {"success" if success else "fail"}')
-    print(f'Local result filename: {output_filename}')
+    end_time = datetime.now()
+    print(f'runtime : {(end_time-start_time).total_seconds()} seconds')
+
+    print(f'result: {"success" if success else "fail"}')
+    print(f'local result filename: {output_filename}')
     return success, output_filename
 
 
@@ -107,13 +112,17 @@ def get_google(driver, photo_filename):
     print(f'found and clicked "find image source" (exact matches) button')
 
     # Get links
-    link_selector = 'li a'
-    WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, link_selector))
-    )
-    link_elems = driver.find_elements(By.CSS_SELECTOR, link_selector)
-    links = [link_elem.get_attribute('href') for link_elem in link_elems]
-    print(f'found links')
+    try:
+        link_selector = 'li a'
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, link_selector))
+        )
+        link_elems = driver.find_elements(By.CSS_SELECTOR, link_selector)
+        links = [link_elem.get_attribute('href') for link_elem in link_elems]
+        print(f'found some exact matches')
+    except TimeoutException as e:
+        links = []
+        print(f'found no exact matches')
 
     return links
 
