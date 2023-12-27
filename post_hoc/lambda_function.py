@@ -1,3 +1,4 @@
+import os
 import boto3
 import json
 import pandas as pd
@@ -8,12 +9,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def save_s3(bucket_name, prefix, output_dir='/tmp'):
+def save_s3(bucket_name, prefix, local_output_dir='/tmp'):
+    print(f'saving s3 files locally into csv')
     print(f'bucket_name: {bucket_name}')
     print(f'prefix: {prefix}')
+    print(f'local output_dir: {local_output_dir}')
 
     output_filename = f'{bucket_name}-{prefix}.csv'.replace('/','_')
-    output_filepath = f'{output_dir}/{output_filename}'
+    output_filepath = f'{local_output_dir}/{output_filename}'
 
     s3 = boto3.client('s3', region_name='us-east-2')  # replace with your preferred region
 
@@ -21,6 +24,8 @@ def save_s3(bucket_name, prefix, output_dir='/tmp'):
 
     # list all json files with today's date prefix
     response = s3.list_objects(Bucket=bucket_name, Prefix=prefix)
+
+    print(f'identiied {len(response["Contents"])} files in this bucket with this prefix')
 
     for s3_file in response['Contents']:
         s3_object_path = s3_file['Key']
@@ -42,6 +47,11 @@ def save_s3(bucket_name, prefix, output_dir='/tmp'):
 
 
 def send_email(subject, body, sender, recipients, filename=None):
+    print(f'sending email')
+    print(f'sender: {sender}')
+    print(f'recipients: {recipients}')
+    print(f'filename: {filename}')
+
     msg = MIMEMultipart()
     msg["Subject"] = subject
     msg["From"] = sender
@@ -68,12 +78,15 @@ def send_email(subject, body, sender, recipients, filename=None):
     print(response)
 
 
+# TODO: Abstract out to an output s3 bucket and prefix (and label existing bucket and prefix as "raw")
 def lambda_handler(event, context):
     try:
         start_time = datetime.now()
         print(f'start time: {start_time}')
 
         bucket_name = event['bucket']
+        local_output_dir = event['local_output_dir'] if 'local_output_dir' in event.keys() else None
+
         if 'prefix' in event.keys():
             prefix = event['prefix']
             subject = f'monitor images output for prefix {prefix}'
@@ -82,7 +95,8 @@ def lambda_handler(event, context):
             yesterday_str = yesterday.strftime('%Y-%m-%d')
             prefix = f'raw/{yesterday_str}'
             subject = f'monitor images output for {yesterday_str}'
-        output_filepath = save_s3(bucket_name, prefix)
+
+        output_filepath = save_s3(bucket_name, prefix, local_output_dir)
 
         sender = "quest2achiever2000@gmail.com"
         recipients = event['recipients']
@@ -107,8 +121,10 @@ def lambda_handler(event, context):
 
 if __name__ == '__main__':
     event = {
-        'bucket': 'test-monitor-images',
-        'recipients': ['quest2achiever2000@gmail.com', 'avliu@umich.edu']
+        'bucket': 'qa-monitor-images',
+        'prefix': 'raw',
+        'local_output_dir': os.getcwd(),
+        'recipients': []
     }
     response = lambda_handler(event, None)
     print(response)
