@@ -7,4 +7,5 @@ other/
 __pycache__/
 tmp/
 docker_runner_aws.sh
+docker_runner_local.sh
 .DS_STORE
