@@ -2,30 +2,30 @@ import sys
 import os
 import time
 import random
+import logging
 from datetime import datetime
 
 from monitor_images import get_driver, monitor_image
+from post_hoc import local_compile
 
 
 def run_local(input_dir: str, output_dir: str, platforms:list = ['google', 'yandex']):
-    print(f'input_dir: {input_dir}')
-    print(f'output_dir: {output_dir}')
-    print(f'platforms: {platforms}')
-
-    # Ensure output_dir exists
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     log_filename = os.path.join(output_dir, "debug.log")
-    log_file = open(log_filename, "w")
-    print(f'log output filename: {log_filename}')
-    sys.stdout = log_file
+    logging.basicConfig(level=logging.INFO, filename=log_filename, filemode="a+",
+                        format="%(asctime)-15s %(levelname)-8s %(message)s")
+
+    logging.info(f'input_dir: {input_dir}')
+    logging.info(f'output_dir: {output_dir}')
+    logging.info(f'platforms: {platforms}')
 
     # Get a list of all files in directory
     all_files = os.listdir(input_dir)
-    print(f'identified {len(all_files)} input images to process')
+    logging.info(f'identified {len(all_files)} input images to process')
 
-    print('\n\n')
+    logging.info('\n\n')
 
     driver = get_driver()
     images_processed = 0
@@ -42,13 +42,10 @@ def run_local(input_dir: str, output_dir: str, platforms:list = ['google', 'yand
                     'scrape_date': datetime.today().strftime('%Y-%m-%d')
                 }
             )
-            print()
 
         images_processed += 1
-        print(f'total images processed: {images_processed} / {len(all_files)}')
+        logging.info(f'total images processed: {images_processed} / {len(all_files)}')
         time.sleep(random.randint(1, 5))
-
-    log_file.close()
 
 
 if __name__ == '__main__':
@@ -57,11 +54,7 @@ if __name__ == '__main__':
 
     input_dir = env_input_dir if env_input_dir else os.path.join(os.getcwd(), 'input')
     output_dir = env_output_dir if env_output_dir else os.path.join(os.getcwd(), 'output')
+    temp_output_dir = os.path.join(output_dir, 'temp')
 
-    #test_input_dir = f'{os.getcwd()}/tmp/qw_images'
-    #test_output_dir = f'{os.getcwd()}/tmp/qw_out'
-
-    # TODO: Use python logging module
-    old_stdout = sys.stdout
-    run_local(input_dir, output_dir)
-    sys.stdout = old_stdout
+    run_local(input_dir, temp_output_dir)
+    local_compile.post_hoc_compile(temp_output_dir, output_dir)

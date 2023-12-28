@@ -3,6 +3,7 @@ import os
 import time
 import traceback
 from datetime import datetime
+import logging
 
 from selenium import webdriver
 from selenium.common import TimeoutException, WebDriverException
@@ -16,13 +17,15 @@ def monitor_image(
         image_filepath,
         output_dir,
         driver,
-        extra_data={}
+        extra_data={},
+        write_error_webpage=False #TODO: Set this as env var
 ):
-    print(
+    logging.info(
         f'running monitor image. platform: {platform}, '
         f'local image filepath: {image_filepath},'
         f'and output directory: {output_dir},'
     )
+    logging.info(f'extra data: {extra_data}, write_error_webpages: {write_error_webpage}')
     start_time = datetime.now()
 
     image_filename_base = image_filepath.split("/")[-1].split(".")[0]
@@ -33,12 +36,12 @@ def monitor_image(
     elif platform == 'yandex':
         monitor_fun = get_yandex
     else:
-        print('platform not recognized!')
+        logging.info('platform not recognized!')
         raise NotImplementedError
 
     try:
         links = monitor_fun(driver, image_filepath)
-        print(f'collected {len(links)} links')
+        logging.info(f'collected {len(links)} links')
 
         data = []
         for link in links:
@@ -57,22 +60,24 @@ def monitor_image(
         success = True
 
     except WebDriverException as e:
-        print(f'selenium error! ')
-        print(str(e))
-        print('stack trace:')
-        traceback.print_exc()
+        logging.info(f'selenium error! ')
+        logging.info(str(e))
+        logging.info('stack trace:')
+        logging.info(traceback.format_exc())
 
-        output_filename = os.path.join(output_dir, f'error_{image_filename_base}.html')
-        with open(output_filename, "w", encoding='utf-8') as f:
-            f.write(driver.page_source)
-
+        if write_error_webpage:
+            output_filename = os.path.join(output_dir, f'error_{image_filename_base}.html')
+            with open(output_filename, "w", encoding='utf-8') as f:
+                f.write(driver.page_source)
+        else:
+            output_filename = 'n.a. (write_error_webpage==False)'
         success = False
 
     end_time = datetime.now()
-    print(f'runtime : {(end_time-start_time).total_seconds()} seconds')
+    logging.info(f'runtime : {(end_time-start_time).total_seconds()} seconds')
 
-    print(f'result: {"success" if success else "fail"}')
-    print(f'local result filename: {output_filename}')
+    logging.info(f'result: {"success" if success else "fail"}')
+    logging.info(f'local result filename: {output_filename}')
     return success, output_filename
 
 
@@ -80,7 +85,7 @@ def get_driver():
     options = webdriver.FirefoxOptions()
     options.add_argument("-headless")
     driver = webdriver.Firefox(options=options)
-    print(f'grabbed driver')
+    logging.info(f'grabbed driver')
     return driver
 
 def get_google(driver, photo_filename):
@@ -93,7 +98,7 @@ def get_google(driver, photo_filename):
         EC.presence_of_element_located((By.CSS_SELECTOR, ris_selector))
     )
     cameraicon.click()
-    print(f'found and clicked reverse image search button')
+    logging.info(f'found and clicked reverse image search button')
 
     # Send the photo file
     photo_upload_selector = "input[type = 'file']"
@@ -101,7 +106,7 @@ def get_google(driver, photo_filename):
         EC.presence_of_element_located((By.CSS_SELECTOR, photo_upload_selector))
     )
     file_input.send_keys(photo_filename)
-    print(f'uploaded image')
+    logging.info(f'uploaded image')
 
     # Click on "Find image source" --> Gives exact matches
     exact_matches_selector = 'div[class="ICt2Q"]'
@@ -109,7 +114,7 @@ def get_google(driver, photo_filename):
         EC.presence_of_element_located((By.CSS_SELECTOR, exact_matches_selector))
     )
     driver.find_element(By.CSS_SELECTOR, exact_matches_selector).click()
-    print(f'found and clicked "find image source" (exact matches) button')
+    logging.info(f'found and clicked "find image source" (exact matches) button')
 
     # Get links
     try:
@@ -119,10 +124,10 @@ def get_google(driver, photo_filename):
         )
         link_elems = driver.find_elements(By.CSS_SELECTOR, link_selector)
         links = [link_elem.get_attribute('href') for link_elem in link_elems]
-        print(f'found some exact matches')
+        logging.info(f'found some exact matches')
     except TimeoutException as e:
         links = []
-        print(f'found no exact matches')
+        logging.info(f'found no exact matches')
 
     return links
 
@@ -136,7 +141,7 @@ def get_yandex(driver, photo_filename):
         EC.presence_of_element_located((By.CSS_SELECTOR, photo_upload_selector))
     )
     file_input.send_keys(photo_filename)
-    print(f'uploaded image')
+    logging.info(f'uploaded image')
 
     time.sleep(30)
 
@@ -150,7 +155,7 @@ def get_yandex(driver, photo_filename):
         exact_match = False
     except TimeoutException as e:
         pass
-    print(f'found exact matches indicator: {"True" if exact_match else "False"}')
+    logging.info(f'found exact matches indicator: {"True" if exact_match else "False"}')
 
     if exact_match:
         link_selector = 'li[class="CbirSites-Item"] div[class="CbirSites-ItemTitle"] a'
@@ -159,7 +164,7 @@ def get_yandex(driver, photo_filename):
         )
         link_elems = driver.find_elements(By.CSS_SELECTOR, link_selector)
         links = [link_elem.get_attribute('href') for link_elem in link_elems]
-        print(f'found links')
+        logging.info(f'found links')
 
     else:
         links = []

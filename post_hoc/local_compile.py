@@ -2,25 +2,32 @@ import pandas as pd
 import json
 import os
 
-output_dir = 'tmp'
-output_file = os.path.join(output_dir, 'out.csv')
 
-# Get list of filenames in the directory
-file_list = [f for f in os.listdir(output_dir) if f.endswith('.json')]
+# data dir is where the jsons are stored
+# output dir is where we want to put the result
+def post_hoc_compile(data_dir, output_dir):
+    output_file = os.path.join(output_dir, 'output.csv')
 
-# Initialize an empty DataFrame
-df = pd.DataFrame()
+    # Get list of filenames in the directory
+    file_list = [f for f in os.listdir(data_dir) if f.endswith('.json')]
 
-# Loop through the files
-for filename in file_list:
-    with open(os.path.join(output_dir,filename), 'r') as f:
-        data = json.load(f)  # Load JSON file
-        temp_df = pd.DataFrame(data)  # Convert dictionary to DataFrame
-        df = pd.concat([df, temp_df], ignore_index=True)  # Appends all data into a single DataFrame
+    # Initialize an empty DataFrame
+    df = pd.DataFrame()
 
-df['domain'] = df['link'].apply(lambda x: x[len('https://'):].split('/')[0])
+    # Loop through the files
+    for filename in file_list:
+        with open(os.path.join(data_dir, filename), 'r') as f:
+            data = json.load(f)  # Load JSON file
+            temp_df = pd.DataFrame(data)  # Convert dictionary to DataFrame
+            df = pd.concat([df, temp_df], ignore_index=True)  # Appends all data into a single DataFrame
 
-df = df[['link','domain','platform','source_image_name']]
+    df['domain'] = df['link'].apply(lambda x: x[len('https://'):].split('/')[0])
 
-# Write the DataFrame to a CSV file
-df.to_csv(out_file, index=False)
+    df = df[['link','domain','platform','source_image_name']]
+
+    # Write the DataFrame to a CSV file
+    df.to_csv(output_file, index=False)
+
+
+if __name__ == '__main__':
+    post_hoc_compile('tmp', 'tmp')
