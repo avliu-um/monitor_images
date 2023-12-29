@@ -5,3 +5,4 @@
 !/requirements.txt
 !/monitor_images.py
 !/runner_*
+!/post_hoc/local_compile.py
