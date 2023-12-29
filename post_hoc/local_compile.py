@@ -25,6 +25,9 @@ def post_hoc_compile(data_dir, output_dir):
 
     df = df[['link','domain','platform','source_image_name']]
 
+    # Drop duplicates
+    df.drop_duplicates(subset='link', inplace=True)
+
     # Write the DataFrame to a CSV file
     df.to_csv(output_file, index=False)
 
