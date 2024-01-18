@@ -34,8 +34,13 @@ def save_s3(bucket_name, prefix, local_output_dir='/tmp'):
         s3_object = s3.get_object(Bucket=bucket_name, Key=s3_object_path)
         s3_object_body = s3_object['Body'].read().decode('utf-8')
 
+        # hacky way to get the date in there, for the runs pre-january that didn't have the scrape_date explicitly
+        json_object = json.loads(s3_object_body)
+        for item in json_object:
+            item['s3_key'] = s3_object_path
+
         # append all read JSON data to files list
-        files += json.loads(s3_object_body)
+        files += json_object
 
     # concatenate all data into one DataFrame
     df = pd.concat([pd.json_normalize(file) for file in files])
