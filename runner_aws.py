@@ -5,6 +5,7 @@ from datetime import datetime
 from monitor_images import get_driver, monitor_image
 
 
+# Note that this function does NOT run any AWS batch but rather just grabs files from and writes results to AWS
 def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_s3_bucket: str):
     s3_client = boto3.client('s3')
     driver = get_driver()
@@ -13,14 +14,15 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
     local_image_filename = f'{os.getcwd()}/tmp/image.jpg'
     local_output_dir = 'tmp'
 
-    images_processed = 0
+    images_processed = 1
     for input_s3_filename in input_s3_filenames:
+        print(f'processing {images_processed} / {len(input_s3_filenames)} images')
+
         if os.path.isfile(local_image_filename):
             os.remove(local_image_filename)
         s3_client.download_file(input_s3_bucket, input_s3_filename, local_image_filename)
 
         for platform in platforms:
-            print(f'new aws runner iteration')
             print(f''
                   f'platform: {platform}, '
                   f'input s3 bucket name: {input_s3_bucket}, '
@@ -52,10 +54,8 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
                 s3_client.upload_file(output_filename, output_s3_bucket, output_s3_filename)
 
             print(f'output s3 filename: {output_s3_filename}')
-            print()
 
-        print(f'processed {images_processed} / {len(input_s3_filenames)} images')
-
+        images_processed += 1
 
 def main():
     platforms = ['google', 'yandex']
