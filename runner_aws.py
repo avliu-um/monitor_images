@@ -45,17 +45,23 @@ def run(platforms: list, input_s3_bucket: str, input_s3_filenames: list, output_
 
             # Prepare S3 path with current date
             today = datetime.strftime(datetime.now(), "%Y-%m-%d")
-            output_s3_filename_base = input_s3_filename.split(".")[0].split("/")[-1]
-            if success:
-                output_s3_filename = f'raw/{today}/{platform}/{output_s3_filename_base}_links.csv'
-                s3_client.upload_file(output_filename, output_s3_bucket, output_s3_filename)
-            else:
-                output_s3_filename = f'errors/{output_s3_filename_base}.html'
-                s3_client.upload_file(output_filename, output_s3_bucket, output_s3_filename)
+            if output_filename:
+                output_s3_filename_base = input_s3_filename.split(".")[0].split("/")[-1]
+                if success:
+                    output_s3_filename = f'raw/{today}/{platform}/{output_s3_filename_base}_links.csv'
+                    s3_client.upload_file(output_filename, output_s3_bucket, output_s3_filename)
+                else:
+                    print(f'an error occured')
+                    output_s3_filename = f'errors/{output_s3_filename_base}.html'
+                    s3_client.upload_file(output_filename, output_s3_bucket, output_s3_filename)
+                print(f'output s3 filename: {output_s3_filename}')
 
-            print(f'output s3 filename: {output_s3_filename}')
+            else:
+                print(f'an error occured, but with no output file')
 
         images_processed += 1
+
+    # TODO: delete local temp dir  
 
 def main():
     platforms = ['google', 'yandex']

@@ -127,8 +127,8 @@ def lambda_handler(event, context):
 if __name__ == '__main__':
     event = {
         'bucket': 'qa-monitor-images',
-        'prefix': 'raw',
-        'local_output_dir': os.getcwd(),
+        'prefix': 'raw/2024-04-06',
+        'local_output_dir': os.getcwd()+'/tmp',
         'recipients': []
     }
     response = lambda_handler(event, None)

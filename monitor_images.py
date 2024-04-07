@@ -70,7 +70,7 @@ def monitor_image(
             with open(output_filename, "w", encoding='utf-8') as f:
                 f.write(driver.page_source)
         else:
-            output_filename = 'n.a. (write_error_webpage==False)'
+            output_filename = None 
         success = False
 
     end_time = datetime.now()
